@@ -1,13 +1,17 @@
 #include "quotes/clients.h"
 
+#include <algorithm>
+
+#include "quotes/session.h"
+
 namespace quotes {
 
-void ClientManager::addClient(ClientId id, Session::pointer session) {
+void ClientsManager::addClient(ClientId id, Session::pointer session) {
     std::lock_guard lock{mMutex};
     mClients.insert({id, std::move(session)});
 }
 
-bool ClientManager::removeClient(ClientId id) {
+bool ClientsManager::removeClient(ClientId id) {
     std::lock_guard lock{mMutex};
     auto element = mClients.find(id);
     auto contains = element != mClients.end();

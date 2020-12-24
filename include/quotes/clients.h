@@ -4,15 +4,13 @@
 #include <mutex>
 
 #include "quotes/session.h"
+#include "quotes/types.h"
 
 namespace quotes {
 
-class ClientManager {
+class ClientsManager {
  public:
-    using ClientId = int;
-
- public:
-    ClientManager() = default;
+    ClientsManager() = default;
 
     void addClient(ClientId id, Session::pointer session);
 

@@ -26,13 +26,14 @@ void Server::handleAccept(
     if (!error) {
         unsigned int seed = time(nullptr);
         auto id = rand_r(&seed);
-        mManager.addClient(id, session);
+        mClientsManager.addClient(id, session);
+        session->startReading();
     }
     startAccept();
 }
 
-ClientManager & Server::manager() noexcept {
-    return mManager;
+ClientsManager & Server::manager() noexcept {
+    return mClientsManager;
 }
 
 }  // namespace quotes

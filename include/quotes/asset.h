@@ -1,28 +1,10 @@
 #pragma once
 
-#include <chrono>
-#include <string>
-#include <vector>
+#include "quotes/types.h"
 
 namespace quotes {
 
-using RawType = std::string;
-
-struct Quote {
-    using TimePoint = std::chrono::time_point<std::chrono::system_clock>;
-    using ValueType = double;
-
-    TimePoint time;
-    ValueType value;
-    ValueType relativeDiff;
-    ValueType absoluteDiff;
-};
-
 class HistoryPoint {
- public:
-    using ValueType = Quote::ValueType;
-    using TimePoint = Quote::TimePoint;
-
  public:
     bool operator<(const HistoryPoint & point) const noexcept;
 
@@ -33,20 +15,19 @@ class HistoryPoint {
 
 class Asset {
  public:
-    using ValueType = Quote::ValueType;
-    using TimePoint = Quote::TimePoint;
-    using HistoryType = std::vector<HistoryPoint>;
+    explicit Asset(std::string name) noexcept;
 
- public:
-    explicit Asset(const std::string & name) noexcept;
+    void add(HistoryPoint point) noexcept;
 
-    void updateQuote(TimePoint time, ValueType value) noexcept;
+    void add(const HistoryType & history) noexcept;
 
-    std::string getName() const noexcept;
+    std::string name() const noexcept;
 
-    Quote getCurrentQuote() const noexcept;
+    HistoryType history() const noexcept;
 
-    HistoryPoint getHistory() const noexcept;
+    Asset truncate(ValueType size) const noexcept;
+
+    Asset truncate(TimePoint from, TimePoint to) const noexcept;
 
  private:
     std::string mName;

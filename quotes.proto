@@ -1,0 +1,30 @@
+syntax = "proto2";
+
+package quotes.proto;
+
+enum Source {
+    CLIENT = 0;
+    SERVER = 1;
+}
+
+enum Type {
+    ADD = 0;
+    DELETE = 1;
+    GET = 2;
+}
+
+message HistoryPoint {
+    optional uint64 time = 1;
+    optional uint64 value = 2;
+}
+
+message Asset {
+    required string name = 1;
+    repeated HistoryPoint history = 2;
+}
+
+message Packet {
+    required Source source = 1;
+    required Type type = 2;
+    repeated Asset assets = 3;
+}

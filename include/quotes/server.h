@@ -25,13 +25,13 @@ class Server {
         Session::pointer session,
         const error_code & error) noexcept;
 
-    ClientManager & manager() noexcept;
+    ClientsManager & manager() noexcept;
 
  private:
     ServicePointer mIoService;
     tcp::acceptor mAcceptor;
-    ClientManager mManager;
-    Assets mAssets;
+    ClientsManager mClientsManager;
+    AssetsManager mAssetsManager;
 };
 
 }  // namespace quotes
