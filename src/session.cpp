@@ -12,17 +12,19 @@
 #include <boost/bind/bind.hpp>
 
 #include "quotes.pb.h"
+#include "quotes/types.h"
 
 namespace quotes {
 
 using boost::system::error_code;
 
-Session::Session(Service ioService) noexcept : mSocket{*ioService} {
+Session::Session(Service ioService, EventPointer event) noexcept
+    : mSocket{*ioService}, mEvents{std::move(event)} {
     std::cout << "New session" << std::endl;
 }
 
-Session::pointer Session::create(Service ioService) noexcept {
-    return pointer{new Session(std::move(ioService))};
+SessionPointer Session::create(Service ioService, EventPointer event) noexcept {
+    return SessionPointer{new Session{std::move(ioService), std::move(event)}};
 }
 
 void Session::startReading() noexcept {
@@ -50,18 +52,30 @@ void Session::handleRead(error_code code, size_t bytes) noexcept {
         proto::Packet packet;
         std::istream stream{&mReadBuffer};
         auto parsed = packet.ParseFromIstream(&stream);
-        // if (parsed)
+        if (parsed && !mEvents.expired()) {
+            auto events = mEvents.lock();
+            events->onPacketRead(shared_from_this(), packet);
+        }
     } else if (
         code == boost::asio::error::eof ||
         code == boost::asio::error::connection_reset) {
-        std::cout << "Disconnected" << std::endl;
-    }
+        if (!mEvents.expired()) {
+            auto events = mEvents.lock();
+            events->onSessionDisconnected(shared_from_this());
+        }
+    } else
+        startReading();
 }
 
 void Session::handleWrite(error_code code, size_t bytes) noexcept {}
 
 tcp::socket & Session::socket() noexcept {
     return mSocket;
+}
+
+void Session::close() noexcept {
+    mSocket.shutdown(tcp::socket::shutdown_receive);
+    mSocket.close();
 }
 
 }  // namespace quotes

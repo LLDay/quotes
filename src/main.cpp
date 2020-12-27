@@ -7,7 +7,7 @@
 
 int main(int argc, char * argv[]) {
     auto service = boost::make_shared<boost::asio::io_service>();
-    quotes::Server server{service};
+    auto server = quotes::Server::create(service);
 
     boost::asio::signal_set signals(*service, SIGINT, SIGTERM);
     signals.async_wait(

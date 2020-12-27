@@ -6,6 +6,7 @@
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/system/error_code.hpp>
 
+#include "quotes/events.h"
 #include "quotes/types.h"
 
 namespace quotes {
@@ -17,14 +18,13 @@ class Packet;
 using boost::asio::ip::tcp;
 
 class Session : public boost::enable_shared_from_this<Session> {
- public:
-    using pointer = boost::shared_ptr<Session>;
-
  private:
-    explicit Session(Service ioService) noexcept;
+    explicit Session(Service ioService, EventPointer events) noexcept;
 
  public:
-    static pointer create(Service ioService) noexcept;
+    static SessionPointer create(
+        Service ioService,
+        EventPointer events) noexcept;
 
     void startReading() noexcept;
 
@@ -36,9 +36,12 @@ class Session : public boost::enable_shared_from_this<Session> {
 
     tcp::socket & socket() noexcept;
 
+    void close() noexcept;
+
  private:
     tcp::socket mSocket;
     boost::asio::streambuf mReadBuffer;
+    EventPointer mEvents;
 };
 
 }  // namespace quotes

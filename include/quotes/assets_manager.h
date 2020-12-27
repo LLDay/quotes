@@ -6,7 +6,6 @@
 
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/split_member.hpp>
-#include <utility>
 
 #include "quotes/asset.h"
 #include "quotes/types.h"
@@ -66,9 +65,11 @@ class AssetsManager {
 
     void addAsset(const std::string & name) noexcept;
 
+    bool hasAsset(const std::string & name) noexcept;
+
     bool removeAsset(const std::string & name) noexcept;
 
-    std::optional<Asset> getAsset(std::string name) noexcept;
+    std::optional<Asset> getAsset(const std::string & name) noexcept;
 
  private:
     std::map<std::string, Asset> mAssets;

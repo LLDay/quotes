@@ -6,7 +6,7 @@
 
 namespace quotes {
 
-void ClientsManager::addClient(ClientId id, Session::pointer session) {
+void ClientsManager::addClient(ClientId id, SessionPointer session) {
     std::lock_guard lock{mMutex};
     mClients.insert({id, std::move(session)});
 }
