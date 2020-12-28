@@ -29,15 +29,14 @@ class Session : public boost::enable_shared_from_this<Session> {
 
     void startReading() noexcept;
 
-    void write(const proto::Packet & packet) noexcept;
-
-    void handleRead(boost::system::error_code error, size_t bytes) noexcept;
-
-    void handleWrite(boost::system::error_code error, size_t bytes) noexcept;
+    void send(const proto::Packet & packet) noexcept;
 
     tcp::socket & socket() noexcept;
 
     void close() noexcept;
+
+ private:
+    void handleRead(boost::system::error_code error, size_t bytes) noexcept;
 
  private:
     tcp::socket mSocket;

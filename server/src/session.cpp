@@ -37,14 +37,12 @@ void Session::startReading() noexcept {
         mSocket, mReadBuffer, boost::asio::transfer_at_least(1), bindObject);
 }
 
-void Session::write(const proto::Packet & packet) noexcept {
-    auto data = packet.SerializeAsString();
-    auto bind = boost::bind(
-        &Session::handleWrite, shared_from_this(),
-        boost::asio::placeholders::error,
-        boost::asio::placeholders::bytes_transferred);
+void writeHandler() noexcept {}
 
-    boost::asio::async_write(mSocket, boost::asio::buffer(data), bind);
+void Session::send(const proto::Packet & packet) noexcept {
+    auto data = packet.SerializeAsString();
+    boost::asio::async_write(
+        mSocket, boost::asio::buffer(data), boost::bind(&writeHandler));
 }
 
 void Session::handleRead(error_code error, size_t bytes) noexcept {
@@ -66,8 +64,6 @@ void Session::handleRead(error_code error, size_t bytes) noexcept {
     }
     startReading();
 }
-
-void Session::handleWrite(error_code, size_t) noexcept {}
 
 tcp::socket & Session::socket() noexcept {
     return mSocket;

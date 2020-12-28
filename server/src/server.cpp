@@ -53,7 +53,7 @@ void Server::onPacketRead(
     }
 
     answer.set_source(proto::Source::SERVER);
-    from->write(packet);
+    from->send(packet);
 }
 
 proto::Packet Server::processAdd(const proto::Packet & packet) noexcept {
