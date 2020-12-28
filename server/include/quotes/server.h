@@ -19,10 +19,12 @@ using boost::system::error_code;
 
 class Server : public IEvents {
  private:
-    explicit Server(Service ioService) noexcept;
+    explicit Server(Service ioService, const tcp::endpoint & endpoint);
 
  public:
-    static ServerPointer create(Service ioService) noexcept;
+    static ServerPointer create(
+        Service ioService,
+        const tcp::endpoint & endpoint);
 
  private:
     void startAccept() noexcept;

@@ -13,12 +13,12 @@
 
 namespace quotes {
 
-Server::Server(Service service) noexcept
-    : mIoService{service}, mAcceptor{*service, tcp::endpoint(tcp::v4(), 1100)} {
-}
+Server::Server(Service service, const tcp::endpoint & endpoint)
+    : mIoService{service}, mAcceptor{*service, endpoint} {}
 
-ServerPointer Server::create(Service service) noexcept {
-    auto serverPointer = ServerPointer{new Server{std::move(service)}};
+ServerPointer Server::create(Service service, const tcp::endpoint & endpoint) {
+    auto serverPointer =
+        ServerPointer{new Server{std::move(service), endpoint}};
     serverPointer->startAccept();
     return serverPointer;
 }

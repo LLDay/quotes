@@ -1,6 +1,5 @@
 #include "quotes/session.h"
 
-#include <iostream>
 #include <istream>
 
 #include <boost/asio/bind_executor.hpp>
@@ -21,9 +20,7 @@ namespace quotes {
 using boost::system::error_code;
 
 Session::Session(Service ioService, EventPointer event) noexcept
-    : mSocket{*ioService}, mStrand{*ioService}, mEvents{std::move(event)} {
-    std::cout << "New session" << std::endl;
-}
+    : mSocket{*ioService}, mStrand{*ioService}, mEvents{std::move(event)} {}
 
 SessionPointer Session::create(Service ioService, EventPointer event) noexcept {
     return SessionPointer{new Session{std::move(ioService), std::move(event)}};
