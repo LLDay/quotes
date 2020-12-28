@@ -62,6 +62,10 @@ class AssetsManager {
  public:
     AssetsManager() = default;
 
+    explicit AssetsManager(std::string path);
+
+    ~AssetsManager() noexcept;
+
     bool remove(const std::string & name) noexcept;
 
     bool has(const std::string & name) noexcept;
@@ -70,6 +74,7 @@ class AssetsManager {
 
  private:
     std::map<std::string, Asset> mAssets;
+    std::string mSavePath;
 };
 
 }  // namespace quotes

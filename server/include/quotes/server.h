@@ -13,18 +13,22 @@
 
 namespace quotes {
 
+struct Setup {
+    boost::asio::ip::tcp::endpoint endpoint;
+    std::string dataPath;
+    Service service;
+};
+
 using boost::asio::io_service;
 using boost::asio::ip::tcp;
 using boost::system::error_code;
 
 class Server : public IEvents {
  private:
-    explicit Server(Service ioService, const tcp::endpoint & endpoint);
+    explicit Server(const Setup & setup);
 
  public:
-    static ServerPointer create(
-        Service ioService,
-        const tcp::endpoint & endpoint);
+    static ServerPointer create(const Setup & setup);
 
  private:
     void startAccept() noexcept;

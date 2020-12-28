@@ -13,12 +13,12 @@
 
 namespace quotes {
 
-Server::Server(Service service, const tcp::endpoint & endpoint)
-    : mIoService{service}, mAcceptor{*service, endpoint} {}
+Server::Server(const Setup & setup)
+    : mIoService{setup.service}, mAcceptor{*setup.service, setup.endpoint},
+      mAssetsManager{setup.dataPath} {}
 
-ServerPointer Server::create(Service service, const tcp::endpoint & endpoint) {
-    auto serverPointer =
-        ServerPointer{new Server{std::move(service), endpoint}};
+ServerPointer Server::create(const Setup & setup) {
+    auto serverPointer = ServerPointer{new Server{setup}};
     serverPointer->startAccept();
     return serverPointer;
 }

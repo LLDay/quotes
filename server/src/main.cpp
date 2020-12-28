@@ -10,22 +10,24 @@
 #include <boost/bind.hpp>
 #include <boost/cstdlib.hpp>
 #include <boost/make_shared.hpp>
-#include <boost/program_options.hpp>
 #include <boost/program_options/options_description.hpp>
+#include <boost/program_options/parsers.hpp>
 #include <boost/program_options/variables_map.hpp>
 #include <boost/system/detail/error_code.hpp>
 
 #include "quotes/server.h"
 
-boost::asio::ip::tcp::endpoint parseArgs(int argc, char * argv[]) {
+quotes::Setup parseArgs(int argc, char * argv[]) {
     namespace po = boost::program_options;
     po::options_description description{"Allowed options"};
 
     // clang-format off
-        description.add_options()
-            ("help,h", "show help message")
-            ("ip,i", po::value<std::string>(), "specify ip address (default 127.0.0.1)")
-            ("port,p", po::value<int>(), "specify port number (default 1100)");
+    description.add_options()
+        ("help,h", "show help message")
+        ("ip,i", po::value<std::string>(), "specify ip address (default 127.0.0.1)")
+        ("port,p", po::value<int>(), "specify port number (default 1100)")
+        ("data,d", po::value<std::string>(), "path to file with saved data (default \"assets.data\")")
+        ("no-data,n", "supress loading/storing data");
     // clang-format on
 
     po::variables_map map;
@@ -37,6 +39,7 @@ boost::asio::ip::tcp::endpoint parseArgs(int argc, char * argv[]) {
         exit(boost::exit_success);
     }
 
+    quotes::Setup setup;
     std::string ip = "127.0.0.1";
     int port = 1100;
 
@@ -46,34 +49,41 @@ boost::asio::ip::tcp::endpoint parseArgs(int argc, char * argv[]) {
     if (map.count("ip"))
         ip = map["ip"].as<decltype(ip)>();
 
+    if (!map.count("no-data")) {
+        setup.dataPath = "assets.data";
+        if (map.count("data"))
+            setup.dataPath = map["data"].as<decltype(setup.dataPath)>();
+    }
+
     boost::asio::ip::tcp::endpoint endpoint;
     endpoint.address(boost::asio::ip::make_address(ip));
     endpoint.port(port);
-    return endpoint;
+
+    setup.endpoint = endpoint;
+    return setup;
 }
 
 int main(int argc, char * argv[]) {
     try {
-        auto service = boost::make_shared<boost::asio::io_service>();
-        auto endpoint = parseArgs(argc, argv);
-        auto server = quotes::Server::create(service, endpoint);
+        auto setup = parseArgs(argc, argv);
+        setup.service = boost::make_shared<boost::asio::io_service>();
+        auto server = quotes::Server::create(setup);
 
-        std::cout << "Server address: " << endpoint << std::endl;
+        std::cout << "Server address: " << setup.endpoint << std::endl;
 
-        boost::asio::signal_set signals(*service, SIGINT, SIGTERM);
+        boost::asio::signal_set signals(*setup.service, SIGINT, SIGTERM);
         signals.async_wait(
-            [&service](const boost::system::error_code & error, int) {
+            [&setup](const boost::system::error_code & error, int) {
                 if (!error)
-                    service->stop();
+                    setup.service->stop();
             });
 
         boost::asio::thread_pool pool{4};
         boost::asio::post(
-            pool, boost::bind(&boost::asio::io_service::run, service));
+            pool, boost::bind(&boost::asio::io_service::run, setup.service));
         pool.join();
 
         return boost::exit_success;
-
     } catch (std::exception & e) {
         std::cerr << e.what() << std::endl;
     } catch (...) {
