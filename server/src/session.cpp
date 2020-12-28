@@ -1,17 +1,19 @@
 #include "quotes/session.h"
 
-#include <boost/asio/error.hpp>
 #include <iostream>
 #include <istream>
 
+#include <boost/asio/bind_executor.hpp>
 #include <boost/asio/buffer.hpp>
 #include <boost/asio/completion_condition.hpp>
+#include <boost/asio/error.hpp>
 #include <boost/asio/placeholders.hpp>
 #include <boost/asio/read.hpp>
 #include <boost/asio/write.hpp>
-#include <boost/bind/bind.hpp>
+#include <boost/bind.hpp>
 
 #include "quotes.pb.h"
+#include "quotes/server.h"
 #include "quotes/types.h"
 
 namespace quotes {
@@ -19,7 +21,7 @@ namespace quotes {
 using boost::system::error_code;
 
 Session::Session(Service ioService, EventPointer event) noexcept
-    : mSocket{*ioService}, mEvents{std::move(event)} {
+    : mSocket{*ioService}, mStrand{*ioService}, mEvents{std::move(event)} {
     std::cout << "New session" << std::endl;
 }
 
@@ -28,13 +30,14 @@ SessionPointer Session::create(Service ioService, EventPointer event) noexcept {
 }
 
 void Session::startReading() noexcept {
-    auto bind = boost::bind(
-        &Session::handleRead, shared_from_this(),
-        boost::asio::placeholders::error,
-        boost::asio::placeholders::bytes_transferred);
+    auto bindObject = boost::asio::bind_executor(
+        mStrand, boost::bind(
+                     &Session::handleRead, shared_from_this(),
+                     boost::asio::placeholders::error,
+                     boost::asio::placeholders::bytes_transferred));
 
     boost::asio::async_read(
-        mSocket, mReadBuffer, boost::asio::transfer_at_least(1), bind);
+        mSocket, mReadBuffer, boost::asio::transfer_at_least(1), bindObject);
 }
 
 void Session::write(const proto::Packet & packet) noexcept {
@@ -47,8 +50,15 @@ void Session::write(const proto::Packet & packet) noexcept {
     boost::asio::async_write(mSocket, boost::asio::buffer(data), bind);
 }
 
-void Session::handleRead(error_code code, size_t bytes) noexcept {
-    if (!code) {
+void Session::handleRead(error_code error, size_t bytes) noexcept {
+    if (error == boost::asio::error::eof ||
+        error == boost::asio::error::connection_reset) {
+        if (!mEvents.expired()) {
+            auto events = mEvents.lock();
+            events->onSessionDisconnected(shared_from_this());
+        }
+        return;
+    } else if (!error) {
         proto::Packet packet;
         std::istream stream{&mReadBuffer};
         auto parsed = packet.ParseFromIstream(&stream);
@@ -56,18 +66,11 @@ void Session::handleRead(error_code code, size_t bytes) noexcept {
             auto events = mEvents.lock();
             events->onPacketRead(shared_from_this(), packet);
         }
-    } else if (
-        code == boost::asio::error::eof ||
-        code == boost::asio::error::connection_reset) {
-        if (!mEvents.expired()) {
-            auto events = mEvents.lock();
-            events->onSessionDisconnected(shared_from_this());
-        }
-    } else
-        startReading();
+    }
+    startReading();
 }
 
-void Session::handleWrite(error_code code, size_t bytes) noexcept {}
+void Session::handleWrite(error_code, size_t) noexcept {}
 
 tcp::socket & Session::socket() noexcept {
     return mSocket;

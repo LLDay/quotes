@@ -2,6 +2,7 @@
 
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/ip/tcp.hpp>
+#include <boost/asio/strand.hpp>
 #include <boost/asio/streambuf.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/system/error_code.hpp>
@@ -30,9 +31,9 @@ class Session : public boost::enable_shared_from_this<Session> {
 
     void write(const proto::Packet & packet) noexcept;
 
-    void handleRead(boost::system::error_code code, size_t bytes) noexcept;
+    void handleRead(boost::system::error_code error, size_t bytes) noexcept;
 
-    void handleWrite(boost::system::error_code code, size_t bytes) noexcept;
+    void handleWrite(boost::system::error_code error, size_t bytes) noexcept;
 
     tcp::socket & socket() noexcept;
 
@@ -40,6 +41,7 @@ class Session : public boost::enable_shared_from_this<Session> {
 
  private:
     tcp::socket mSocket;
+    boost::asio::io_service::strand mStrand;
     boost::asio::streambuf mReadBuffer;
     EventPointer mEvents;
 };

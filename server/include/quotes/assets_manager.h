@@ -1,7 +1,6 @@
 #pragma once
 
 #include <map>
-#include <optional>
 #include <string>
 
 #include <boost/serialization/access.hpp>
@@ -63,13 +62,11 @@ class AssetsManager {
  public:
     AssetsManager() = default;
 
-    void addAsset(const std::string & name) noexcept;
+    bool remove(const std::string & name) noexcept;
 
-    bool hasAsset(const std::string & name) noexcept;
+    bool has(const std::string & name) noexcept;
 
-    bool removeAsset(const std::string & name) noexcept;
-
-    std::optional<Asset> getAsset(const std::string & name) noexcept;
+    Asset & getOrCreate(const std::string & name) noexcept;
 
  private:
     std::map<std::string, Asset> mAssets;

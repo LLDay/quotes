@@ -1,5 +1,6 @@
 #pragma once
 
+#include "quotes.pb.h"
 #include "quotes/types.h"
 
 namespace quotes {
@@ -19,9 +20,13 @@ class Asset {
 
     void add(HistoryPoint point) noexcept;
 
+    void add(proto::HistoryPoint protoPoint) noexcept;
+
     void add(const HistoryType & history) noexcept;
 
     std::string name() const noexcept;
+
+    proto::Asset toProto() const noexcept;
 
     HistoryType history() const noexcept;
 

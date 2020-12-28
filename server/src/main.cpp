@@ -1,5 +1,8 @@
 #include <boost/asio/io_service.hpp>
+#include <boost/asio/post.hpp>
 #include <boost/asio/signal_set.hpp>
+#include <boost/asio/thread_pool.hpp>
+#include <boost/bind.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/system/detail/error_code.hpp>
 
@@ -16,6 +19,10 @@ int main(int argc, char * argv[]) {
                 service->stop();
         });
 
-    service->run();
+    boost::asio::thread_pool pool{4};
+    boost::asio::post(
+        pool, boost::bind(&boost::asio::io_service::run, service));
+    pool.join();
+
     return 0;
 }

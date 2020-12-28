@@ -17,16 +17,8 @@ PROTOBUF_GENERATE_CPP(
     ${CMAKE_SOURCE_DIR}/quotes.proto
 )
 
-PROTOBUF_GENERATE_PYTHON(
-    PROTO_PY
-    ${CMAKE_SOURCE_DIR}/quotes.proto
-)
-
-add_custom_target(python_proto
-    ALL DEPENDS ${PROTO_PY})
-
 add_executable(server
-    ${CMAKE_CURRENT_SOURCE_DIR}/clients.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/clients_manager.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/asset.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/assets_manager.cpp

@@ -2,12 +2,12 @@
 
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/ip/tcp.hpp>
-#include <boost/config/detail/suffix.hpp>
 #include <boost/smart_ptr/shared_ptr.hpp>
 #include <boost/system/detail/error_code.hpp>
 
+#include "quotes.pb.h"
 #include "quotes/assets_manager.h"
-#include "quotes/clients.h"
+#include "quotes/clients_manager.h"
 #include "quotes/events.h"
 #include "quotes/types.h"
 
@@ -36,6 +36,12 @@ class Server : public IEvents {
         const proto::Packet & packet) noexcept override;
 
     void onSessionDisconnected(SessionPointer session) noexcept override;
+
+    proto::Packet processAdd(const proto::Packet & packet) noexcept;
+
+    proto::Packet processDelete(const proto::Packet & packet) noexcept;
+
+    proto::Packet processGet(const proto::Packet & packet) noexcept;
 
  private:
     Service mIoService;

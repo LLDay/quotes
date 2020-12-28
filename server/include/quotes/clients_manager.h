@@ -1,7 +1,8 @@
 #pragma once
 
 #include <map>
-#include <mutex>
+
+#include <boost/thread/mutex.hpp>
 
 #include "quotes/types.h"
 
@@ -11,13 +12,15 @@ class ClientsManager {
  public:
     ClientsManager() = default;
 
-    void addClient(ClientId id, SessionPointer session);
+    void addClient(ClientId id, SessionPointer session) noexcept;
 
-    bool removeClient(ClientId id);
+    bool removeClient(ClientId id) noexcept;
+
+    bool removeClient(SessionPointer session) noexcept;
 
  private:
     std::map<ClientId, SessionPointer> mClients;
-    std::mutex mMutex;
+    boost::mutex mMutex;
 };
 
 }  // namespace quotes
