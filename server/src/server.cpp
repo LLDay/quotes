@@ -53,7 +53,7 @@ void Server::onPacketRead(
     }
 
     answer.set_source(proto::Source::SERVER);
-    from->send(packet);
+    from->send(answer);
 }
 
 proto::Packet Server::processAdd(const proto::Packet & packet) noexcept {
@@ -86,7 +86,7 @@ proto::Packet Server::processGet(const proto::Packet & packet) noexcept {
     auto answer = packet;
     answer.clear_assets();
 
-    for (size_t i = 0; i < packet.assets_size(); ++i) {
+    for (int i = 0; i < packet.assets_size(); ++i) {
         auto protoAsset = packet.assets(i);
         auto assetName = protoAsset.name();
         if (!mAssetsManager.has(assetName))

@@ -10,23 +10,26 @@
 
 namespace quotes {
 
-AssetsManager::AssetsManager(std::string path) : mSavePath{path} {
+AssetsManager::AssetsManager(std::string path) {
     if (!mSavePath.empty()) {
-        std::ifstream inputStream{mSavePath, std::ios::binary};
+        std::ifstream inputStream{path, std::ios::binary};
         if (!inputStream.is_open())
             return;
 
         boost::archive::binary_iarchive archive{inputStream};
         AssetsManager readAssets;
         archive >> readAssets;
-        (*this) = readAssets;
         inputStream.close();
+
+        (*this) = readAssets;
+        mSavePath = path;
     }
 }
 
 AssetsManager::~AssetsManager() noexcept {
     if (!mSavePath.empty()) {
-        std::ofstream outputStream{mSavePath};
+        std::ofstream outputStream{
+            mSavePath, std::ofstream::out | std::ofstream::binary};
         if (!outputStream.is_open())
             return;
 
