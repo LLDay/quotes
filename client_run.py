@@ -1,4 +1,4 @@
-from client import *
+from client.recieve import Recieve
 
 def main():
     recieve = Recieve("127.0.0.1", 1100)
