@@ -25,6 +25,8 @@ using boost::system::error_code;
 
 class Server : public IEvents {
  private:
+    constexpr static char const * ALL_QUOTES_REQUEST = "*";
+
     explicit Server(const Setup & setup);
 
  public:

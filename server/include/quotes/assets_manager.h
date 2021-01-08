@@ -72,6 +72,8 @@ class AssetsManager {
 
     Asset & getOrCreate(const std::string & name) noexcept;
 
+    std::vector<std::string> getAllNames() const noexcept;
+
  private:
     std::map<std::string, Asset> mAssets;
     std::string mSavePath;

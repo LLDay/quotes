@@ -1,11 +1,13 @@
 #include "quotes/server.h"
 
 #include <time.h>
+#include <map>
 #include <random>
 
 #include <boost/asio/placeholders.hpp>
 #include <boost/bind.hpp>
 
+#include "quotes.pb.h"
 #include "quotes/asset.h"
 #include "quotes/server.h"
 #include "quotes/session.h"
@@ -57,53 +59,87 @@ void Server::onPacketRead(
 }
 
 proto::Packet Server::processAdd(const proto::Packet & packet) noexcept {
-    for (auto i = 0; i < packet.assets_size(); ++i) {
-        auto packetAsset = packet.assets(i);
-        auto asset = mAssetsManager.getOrCreate(packetAsset.name());
-
-        for (auto & point : packetAsset.history())
-            asset.add(point);
-    }
-
-    return packet;
-}
-proto::Packet Server::processDelete(const proto::Packet & packet) noexcept {
     auto answer = packet;
     answer.clear_assets();
 
-    for (auto i = 0; i < packet.assets_size(); ++i) {
-        auto assetName = packet.assets(i).name();
-        if (mAssetsManager.remove(assetName)) {
+    for (auto & packetAsset : packet.assets()) {
+        std::vector<std::string> assetsNames{packetAsset.name()};
+        if (packetAsset.name() == ALL_QUOTES_REQUEST)
+            assetsNames = mAssetsManager.getAllNames();
+
+        for (auto & assetName : assetsNames) {
+            auto asset = mAssetsManager.getOrCreate(assetName);
             auto protoAsset = answer.add_assets();
             protoAsset->set_name(assetName);
+            for (auto & point : packetAsset.history()) {
+                auto protoHistoryPoint = protoAsset->add_history();
+                (*protoHistoryPoint) = point;
+                asset.add(point);
+            }
         }
     }
 
     return answer;
 }
 
-proto::Packet Server::processGet(const proto::Packet & packet) noexcept {
+proto::Packet Server::processDelete(const proto::Packet & packet) noexcept {
     auto answer = packet;
     answer.clear_assets();
 
-    for (int i = 0; i < packet.assets_size(); ++i) {
-        auto protoAsset = packet.assets(i);
-        auto assetName = protoAsset.name();
-        if (!mAssetsManager.has(assetName))
-            continue;
+    for (auto & packetAsset : packet.assets()) {
+        std::vector<std::string> assetsNames{packetAsset.name()};
+        if (packetAsset.name() == ALL_QUOTES_REQUEST)
+            assetsNames = mAssetsManager.getAllNames();
 
-        auto asset = mAssetsManager.getOrCreate(assetName);
-        if (protoAsset.history_size() == 1) {
-            auto size = protoAsset.history(0).value();
-            asset = asset.truncate(size);
-        } else if (protoAsset.history_size() == 2) {
-            auto from = protoAsset.history(0).time();
-            auto to = protoAsset.history(1).time();
-            asset = asset.truncate(from, to);
+        for (auto & assetName : assetsNames) {
+            if (mAssetsManager.remove(assetName)) {
+                auto protoAsset = answer.add_assets();
+                protoAsset->set_name(assetName);
+            }
         }
+    }
 
+    return answer;
+}
+
+Asset truncatedAsset(const Asset & asset, const proto::Asset protoAsset) {
+    if (protoAsset.history_size() == 1) {
+        auto size = protoAsset.history(0).value();
+        return asset.truncate(size);
+    } else if (protoAsset.history_size() == 2) {
+        auto from = protoAsset.history(0).time();
+        auto to = protoAsset.history(1).time();
+        return asset.truncate(from, to);
+    }
+    return asset;
+}
+
+proto::Packet Server::processGet(const proto::Packet & packet) noexcept {
+    std::map<std::string, Asset> requestedAssets;
+    auto answer = packet;
+    answer.clear_assets();
+
+    for (auto & protoAsset : packet.assets()) {
+        std::vector<std::string> assetsNames{protoAsset.name()};
+
+        if (protoAsset.name() == ALL_QUOTES_REQUEST)
+            assetsNames = mAssetsManager.getAllNames();
+
+        for (auto & assetName : assetsNames) {
+            if (!mAssetsManager.has(assetName))
+                continue;
+
+            if (requestedAssets.find(assetName) == requestedAssets.end()) {
+                auto asset = mAssetsManager.getOrCreate(assetName);
+                asset = truncatedAsset(asset, protoAsset);
+                requestedAssets.insert({assetName, asset});
+            }
+        }
+    }
+
+    for (auto & pair : requestedAssets) {
         auto newProtoAsset = answer.add_assets();
-        (*newProtoAsset) = asset.toProto();
+        (*newProtoAsset) = pair.second.toProto();
     }
 
     return answer;

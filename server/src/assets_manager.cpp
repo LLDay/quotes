@@ -54,4 +54,11 @@ Asset & AssetsManager::getOrCreate(const std::string & name) noexcept {
     return mAssets.at(name);
 }
 
+std::vector<std::string> AssetsManager::getAllNames() const noexcept {
+    std::vector<std::string> allNames;
+    for (auto & pair : mAssets)
+        allNames.push_back(pair.first);
+    return allNames;
+}
+
 }  // namespace quotes
