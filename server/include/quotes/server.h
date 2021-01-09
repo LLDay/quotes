@@ -17,6 +17,7 @@ struct Setup {
     boost::asio::ip::tcp::endpoint endpoint;
     std::string dataPath;
     Service service;
+    size_t threads;
 };
 
 using boost::asio::io_service;

@@ -26,6 +26,7 @@ quotes::Setup parseArgs(int argc, char * argv[]) {
     description.add_options()
         ("help,h", "show help message")
         ("ip,i", po::value<std::string>(), "specify ip address (default 127.0.0.1)")
+        ("threads,t", po::value<size_t>(), "number of threads (default 4)")
         ("port,p", po::value<int>(), "specify port number (default 1100)")
         ("data,d", po::value<std::string>(), "path to file with saved data (default \"assets.data\")")
         ("no-data,n", "supress loading/storing data");
@@ -41,6 +42,7 @@ quotes::Setup parseArgs(int argc, char * argv[]) {
     }
 
     quotes::Setup setup;
+    setup.threads = 4;
     std::string ip = "127.0.0.1";
     int port = 1100;
 
@@ -49,6 +51,9 @@ quotes::Setup parseArgs(int argc, char * argv[]) {
 
     if (map.count("ip"))
         ip = map["ip"].as<decltype(ip)>();
+
+    if (map.count("threads"))
+        setup.threads = map["threads"].as<size_t>();
 
     if (!map.count("no-data")) {
         setup.dataPath = "assets.data";
@@ -80,7 +85,7 @@ int main(int argc, char * argv[]) {
                 quotes::log();
             });
 
-        boost::asio::thread_pool pool{4};
+        boost::asio::thread_pool pool{setup.threads};
         boost::asio::post(
             pool, boost::bind(&boost::asio::io_service::run, setup.service));
         pool.join();

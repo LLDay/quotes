@@ -135,6 +135,7 @@ proto::Packet Server::processGet(const proto::Packet & packet) noexcept {
                     asset.truncate(from, to);
                 } else {
                     asset.truncate(0);
+                    log("Request", assetName);
                 }
 
                 requestedAssets.insert({assetName, asset});
