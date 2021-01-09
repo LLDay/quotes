@@ -15,6 +15,7 @@
 #include <boost/program_options/variables_map.hpp>
 #include <boost/system/detail/error_code.hpp>
 
+#include "quotes/log.h"
 #include "quotes/server.h"
 
 quotes::Setup parseArgs(int argc, char * argv[]) {
@@ -35,7 +36,7 @@ quotes::Setup parseArgs(int argc, char * argv[]) {
     po::notify(map);
 
     if (map.count("help")) {
-        std::cout << description << std::endl;
+        quotes::log(description);
         exit(boost::exit_success);
     }
 
@@ -69,13 +70,14 @@ int main(int argc, char * argv[]) {
         setup.service = boost::make_shared<boost::asio::io_service>();
         auto server = quotes::Server::create(setup);
 
-        std::cout << "Server address: " << setup.endpoint << std::endl;
+        quotes::log("Server address:", setup.endpoint);
 
         boost::asio::signal_set signals(*setup.service, SIGINT, SIGTERM);
         signals.async_wait(
             [&setup](const boost::system::error_code & error, int) {
                 if (!error)
                     setup.service->stop();
+                quotes::log();
             });
 
         boost::asio::thread_pool pool{4};

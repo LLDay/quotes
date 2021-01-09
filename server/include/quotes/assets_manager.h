@@ -37,7 +37,7 @@ class AssetsManager {
         SizeType assetsNumber;
         archive >> assetsNumber;
 
-        for (SizeType a; a < assetsNumber; ++a) {
+        for (SizeType a = 0; a < assetsNumber; ++a) {
             std::string assetName;
             SizeType pointsNumber;
             archive >> assetName;
@@ -62,7 +62,7 @@ class AssetsManager {
  public:
     AssetsManager() = default;
 
-    explicit AssetsManager(std::string path);
+    explicit AssetsManager(const std::string & path) noexcept;
 
     ~AssetsManager() noexcept;
 

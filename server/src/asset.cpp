@@ -2,6 +2,7 @@
 
 #include "quotes.pb.h"
 #include "quotes/asset.h"
+#include "quotes/log.h"
 #include "quotes/types.h"
 
 namespace quotes {
@@ -21,6 +22,7 @@ void Asset::add(proto::HistoryPoint protoPoint) noexcept {
     HistoryPoint point;
     point.time = protoPoint.time();
     point.value = protoPoint.value();
+    log("Add point: time", point.time, "value", point.value);
     add(point);
 }
 

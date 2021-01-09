@@ -9,7 +9,7 @@
 
 #include "quotes.pb.h"
 #include "quotes/asset.h"
-#include "quotes/server.h"
+#include "quotes/log.h"
 #include "quotes/session.h"
 #include "quotes/types.h"
 
@@ -71,6 +71,7 @@ proto::Packet Server::processAdd(const proto::Packet & packet) noexcept {
             auto asset = mAssetsManager.getOrCreate(assetName);
             auto protoAsset = answer.add_assets();
             protoAsset->set_name(assetName);
+
             for (auto & point : packetAsset.history()) {
                 auto protoHistoryPoint = protoAsset->add_history();
                 (*protoHistoryPoint) = point;
@@ -102,18 +103,6 @@ proto::Packet Server::processDelete(const proto::Packet & packet) noexcept {
     return answer;
 }
 
-Asset truncatedAsset(const Asset & asset, const proto::Asset protoAsset) {
-    if (protoAsset.history_size() == 1) {
-        auto size = protoAsset.history(0).value();
-        return asset.truncate(size);
-    } else if (protoAsset.history_size() == 2) {
-        auto from = protoAsset.history(0).time();
-        auto to = protoAsset.history(1).time();
-        return asset.truncate(from, to);
-    }
-    return asset;
-}
-
 proto::Packet Server::processGet(const proto::Packet & packet) noexcept {
     std::map<std::string, Asset> requestedAssets;
     auto answer = packet;
@@ -121,17 +110,32 @@ proto::Packet Server::processGet(const proto::Packet & packet) noexcept {
 
     for (auto & protoAsset : packet.assets()) {
         std::vector<std::string> assetsNames{protoAsset.name()};
+        bool isRequestsAll = protoAsset.name() == ALL_QUOTES_REQUEST;
 
-        if (protoAsset.name() == ALL_QUOTES_REQUEST)
+        if (isRequestsAll)
             assetsNames = mAssetsManager.getAllNames();
 
         for (auto & assetName : assetsNames) {
             if (!mAssetsManager.has(assetName))
                 continue;
 
-            if (requestedAssets.find(assetName) == requestedAssets.end()) {
+            if (isRequestsAll &&
+                requestedAssets.find(assetName) == requestedAssets.end()) {
                 auto asset = mAssetsManager.getOrCreate(assetName);
-                asset = truncatedAsset(asset, protoAsset);
+
+                if (protoAsset.history_size() == 1) {
+                    auto size = protoAsset.history(0).value();
+                    asset = asset.truncate(size);
+                    log("Request last", size, "points of", assetName);
+                } else if (protoAsset.history_size() == 2) {
+                    auto from = protoAsset.history(0).time();
+                    auto to = protoAsset.history(1).time();
+                    log("Request", assetName, "by time from", from, "to", to);
+                    asset = asset.truncate(from, to);
+                } else {
+                    asset.truncate(0);
+                }
+
                 requestedAssets.insert({assetName, asset});
             }
         }

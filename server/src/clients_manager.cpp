@@ -1,10 +1,10 @@
 #include "quotes/clients_manager.h"
 
 #include <algorithm>
-#include <iostream>
 
 #include <boost/thread/lock_guard.hpp>
 
+#include "quotes/log.h"
 #include "quotes/types.h"
 
 namespace quotes {
@@ -12,10 +12,11 @@ namespace quotes {
 void ClientsManager::addClient(ClientId id, SessionPointer session) noexcept {
     boost::lock_guard lock{mMutex};
     mClients.insert({id, std::move(session)});
+    log("New client", id);
 }
 
 void clientRemoved(ClientId id) {
-    std::cout << "Client " << id << " is disconnected" << std::endl;
+    log("Client", id, "is disconnected");
 }
 
 bool ClientsManager::removeClient(ClientId id) noexcept {
