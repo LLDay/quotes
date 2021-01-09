@@ -120,8 +120,11 @@ proto::Packet Server::processGet(const proto::Packet & packet) noexcept {
             if (!mAssetsManager.has(assetName))
                 continue;
 
-            if (isRequestsAll &&
-                requestedAssets.find(assetName) == requestedAssets.end()) {
+            bool requestedBefore =
+                requestedAssets.find(assetName) != requestedAssets.end();
+
+            // override request parameters for explicitly written assets only
+            if (!requestedBefore || !isRequestsAll) {
                 auto asset = mAssetsManager.getOrCreate(assetName);
 
                 if (protoAsset.history_size() == 1) {
@@ -138,7 +141,10 @@ proto::Packet Server::processGet(const proto::Packet & packet) noexcept {
                     log("Request", assetName);
                 }
 
-                requestedAssets.insert({assetName, asset});
+                if (requestedBefore)
+                    requestedAssets.at(assetName) = asset;
+                else
+                    requestedAssets.insert({assetName, asset});
             }
         }
     }
