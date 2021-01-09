@@ -2,6 +2,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/split_member.hpp>
@@ -45,7 +46,7 @@ class AssetsManager {
 
             Asset asset{assetName};
             HistoryType history;
-            for (SizeType p; p < pointsNumber; ++p) {
+            for (SizeType p = 0; p < pointsNumber; ++p) {
                 HistoryPoint point;
                 archive >> point.time;
                 archive >> point.value;
@@ -53,7 +54,7 @@ class AssetsManager {
             }
 
             asset.add(history);
-            mAssets.emplace(std::make_pair(assetName, std::move(asset)));
+            mAssets.emplace(assetName, std::move(asset));
         }
     }
 
@@ -73,6 +74,9 @@ class AssetsManager {
     Asset & getOrCreate(const std::string & name) noexcept;
 
     std::vector<std::string> getAllNames() const noexcept;
+
+ private:
+    size_t totalHistoryPoints() const noexcept;
 
  private:
     std::map<std::string, Asset> mAssets;

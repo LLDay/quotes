@@ -68,7 +68,7 @@ proto::Packet Server::processAdd(const proto::Packet & packet) noexcept {
             assetsNames = mAssetsManager.getAllNames();
 
         for (auto & assetName : assetsNames) {
-            auto asset = mAssetsManager.getOrCreate(assetName);
+            auto & asset = mAssetsManager.getOrCreate(assetName);
             auto protoAsset = answer.add_assets();
             protoAsset->set_name(assetName);
 
@@ -96,6 +96,7 @@ proto::Packet Server::processDelete(const proto::Packet & packet) noexcept {
             if (mAssetsManager.remove(assetName)) {
                 auto protoAsset = answer.add_assets();
                 protoAsset->set_name(assetName);
+                log("Delete", assetName);
             }
         }
     }
@@ -125,13 +126,13 @@ proto::Packet Server::processGet(const proto::Packet & packet) noexcept {
 
                 if (protoAsset.history_size() == 1) {
                     auto size = protoAsset.history(0).value();
-                    asset = asset.truncate(size);
+                    asset.truncate(size);
                     log("Request last", size, "points of", assetName);
                 } else if (protoAsset.history_size() == 2) {
                     auto from = protoAsset.history(0).time();
                     auto to = protoAsset.history(1).time();
                     log("Request", assetName, "by time from", from, "to", to);
-                    asset = asset.truncate(from, to);
+                    asset.truncate(from, to);
                 } else {
                     asset.truncate(0);
                 }

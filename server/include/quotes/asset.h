@@ -1,5 +1,7 @@
 #pragma once
 
+#include <ostream>
+
 #include "quotes.pb.h"
 #include "quotes/types.h"
 
@@ -8,6 +10,12 @@ namespace quotes {
 class HistoryPoint {
  public:
     bool operator<(const HistoryPoint & point) const noexcept;
+
+    bool operator==(const HistoryPoint & point) const noexcept;
+
+    friend std::ostream & operator<<(
+        std::ostream & ostream,
+        const HistoryPoint & point) noexcept;
 
  public:
     ValueType value;
@@ -30,9 +38,9 @@ class Asset {
 
     HistoryType history() const noexcept;
 
-    Asset truncate(ValueType size) const noexcept;
+    void truncate(ValueType size) noexcept;
 
-    Asset truncate(TimePoint from, TimePoint to) const noexcept;
+    void truncate(TimePoint from, TimePoint to) noexcept;
 
  private:
     std::string mName;

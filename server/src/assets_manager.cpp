@@ -5,6 +5,7 @@
 
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
+#include <numeric>
 
 #include "quotes/asset.h"
 #include "quotes/assets_manager.h"
@@ -26,6 +27,7 @@ AssetsManager::AssetsManager(const std::string & path) noexcept
 
         mAssets = readAssets.mAssets;
         log("Read", mAssets.size(), "assets from", mSavePath);
+        log("Read", totalHistoryPoints(), "history points");
     }
 }
 
@@ -39,6 +41,7 @@ AssetsManager::~AssetsManager() noexcept {
         archive << *this;
         outputStream.close();
         log("Save", mAssets.size(), "assets to", mSavePath);
+        log("Save", totalHistoryPoints(), "history points");
     }
 }
 
@@ -64,6 +67,14 @@ std::vector<std::string> AssetsManager::getAllNames() const noexcept {
     for (auto & pair : mAssets)
         allNames.push_back(pair.first);
     return allNames;
+}
+
+size_t AssetsManager::totalHistoryPoints() const noexcept {
+    return std::accumulate(
+        mAssets.begin(), mAssets.end(), 0,
+        [](int total, const std::pair<std::string, Asset> & b) {
+            return total + b.second.history().size();
+        });
 }
 
 }  // namespace quotes
