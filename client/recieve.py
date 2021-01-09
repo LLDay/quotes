@@ -6,11 +6,6 @@ from client.controller import Controller
 
 MESSAGE_LENGTH = 1024
 
-class MessageType(Enum):
-    ASSET = 1
-    HISTORY = 2
-    ALL = 3
-
 class Recieve:
     def __init__(self, ip, port):
         self.client_socket = socket(AF_INET, SOCK_STREAM, 0)
@@ -25,12 +20,12 @@ class Recieve:
                 pass #Try again
 
         self.type_request = quotes_pb2.GET
-        self.message_request = MessageType.ASSET
 
         controller = Controller(clientSocket=self.client_socket)
         is_server_on = True
         while is_server_on:
             controller.console_enter()
+            print("after")
             is_server_on = self._recieve_message(controller.data)
 
     def _recieve_message(self, data={}):
@@ -45,52 +40,43 @@ class Recieve:
                 return False
                 #sys.exit()
             full_message.extend(message_recieved)
-
             receive_uncompleted = message.ParseFromString(full_message)
 
-        self.checkServerResponse(data, full_message, self.message_request)
+        self.checkServerResponse(data, message)
         return True
 
-    def checkServerResponse(self, data, message, messageRequest):
-        if not (message.type == quotes_pb2.Type.GET):
+    def checkServerResponse(self, data, message):
+        print("after recieving")
+        if message.type != quotes_pb2.Type.GET:
             self._recieve_add_delete(data=data, message=message)
         else:
-            self._recieve_get(message=message, messageRequest=messageRequest)
+            self._recieve_get(message=message)
 
     def _recieve_add_delete(self, data, message):
-            data_recieved = {}
-            for asset in message.assets:
-                data_recieved[asset.name] = {}
-                points_number = 0
-                for history_point in asset.history:
-                    print(history_point)
-                    points_number += 1
-                    data_recieved[asset.name][history_point.time] = history_point.value
-                if (points_number == 0):
-                    data_recieved[asset.name][0] = 0
+        data_recieved = {}
+        for asset in message.assets:
+            data_recieved[asset.name] = {}
+            for history_point in asset.history:
+                print(history_point)
+                data_recieved[asset.name][history_point.time] = history_point.value
 
-            if (data == data_recieved):
-                print("All good")
+        if data == data_recieved:
+            print("All good")
+        else:
+            if data.keys() != data_recieved.keys():
+                print("Wrong asset")
             else:
-                if (data.keys() != data_recieved.keys()):
-                    print("Wrong asset")
-                else:
-                    print("Wrong history")
+                print("Wrong history")
 
-    def _recieve_get(self, message, messageRequest):
-        if (messageRequest == MessageType.ALL):
-            for asset in message.assets:
-                print(asset.name)
-        elif (messageRequest == MessageType.HISTORY):
-            for asset in message.assets:
-                print(asset.name)
-                for history_point in asset.history:
+    def _recieve_get(self, message):
+        for asset in message.assets:
+            print(asset.name)
+            for history_point in asset.history:
+                if len(history_point) != 2:
                     print("time: ", history_point.time,
                             " value: ", history_point.value)
-        else:
-            for asset in message.assets:
-                print(asset.name)
-                points = []
-                for history_point in asset.history:
-                    points.append(history_point.value)
-                print("absolute: ", points[1]-points[0], " relative: ", (points[1]/points[0]*100)-100)
+                else:
+                    points = []
+                    for history_point in asset.history:
+                        points.append(history_point.value)
+                    print("absolute: ", points[1]-points[0], " relative: ", (points[1]/points[0]*100)-100)
