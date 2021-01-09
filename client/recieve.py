@@ -23,12 +23,13 @@ class Recieve:
 
         controller = Controller(clientSocket=self.client_socket)
         is_server_on = True
+
         while is_server_on:
             controller.console_enter()
             print("after")
-            is_server_on = self._recieve_message(controller.data)
+            is_server_on = self._recieve_message(controller.data, controller.action_incrimentation)
 
-    def _recieve_message(self, data={}):
+    def _recieve_message(self, data={}, actionIncrimentation):
         receive_uncompleted = 0
         full_message = bytearray()
         message = quotes_pb2.Packet()
@@ -42,15 +43,15 @@ class Recieve:
             full_message.extend(message_recieved)
             receive_uncompleted = message.ParseFromString(full_message)
 
-        self.checkServerResponse(data, message)
+        self.checkServerResponse(data, message, actionIncrimentation)
         return True
 
-    def checkServerResponse(self, data, message):
+    def checkServerResponse(self, data, message, actionIncrimentation):
         print("after recieving")
         if message.type != quotes_pb2.Type.GET:
             self._recieve_add_delete(data=data, message=message)
         else:
-            self._recieve_get(message=message)
+            self._recieve_get(message=message, actionIncrimentation)
 
     def _recieve_add_delete(self, data, message):
         data_recieved = {}
@@ -68,15 +69,14 @@ class Recieve:
             else:
                 print("Wrong history")
 
-    def _recieve_get(self, message):
+    def _recieve_get(self, message, actionIncrimentation):
         for asset in message.assets:
             print(asset.name)
-            for history_point in asset.history:
-                if len(history_point) != 2:
-                    print("time: ", history_point.time,
-                            " value: ", history_point.value)
-                else:
-                    points = []
-                    for history_point in asset.history:
-                        points.append(history_point.value)
-                    print("absolute: ", points[1]-points[0], " relative: ", (points[1]/points[0]*100)-100)
+            if actionIncrimentation:
+                points = []
+                for history_point in asset.history:
+                    points.append(history_point.value)
+                print("absolute: ", points[1]-points[0], " relative: ", (points[1]/points[0]*100)-100)
+            else:
+                for history_point in asset.history:
+                    print("time: ", history_point.time, " value: ", history_point.value)

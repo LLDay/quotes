@@ -16,11 +16,10 @@ class Send:
         for name in self.data:
             asset = self.message.assets.add()
             asset.name = name
-            for points in self.data[name]:
-                for time, value in zip(points[0::2], points[1::2]):
-                    history_point = asset.history.add()
-                    history_point.time = int(time)
-                    history_point.value = int(value)
+            for time, value in self.data[name].items():
+                history_point = asset.history.add()
+                history_point.time = int(time)
+                history_point.value = int(value)
         self._send_to_server()
 
     def _send_to_server(self):
