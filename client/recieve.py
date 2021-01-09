@@ -1,6 +1,6 @@
 from socket import *
 import sys
-from client.proto import quotes_pb2
+import client.proto.quotes_pb2 as quotes_pb2
 from enum import Enum
 from client.controller import Controller
 

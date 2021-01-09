@@ -2,12 +2,6 @@ from socket import *
 from enum import Enum
 import client.proto.quotes_pb2 as quotes_pb2
 from datetime import datetime
-#from client.recieve import MessageType
-
-class MessageType(Enum):
-    ASSET = 1
-    HISTORY = 2
-    ALL = 3
 
 class Send:
     def __init__(self, clientSocket, typeRequest, data={}):
