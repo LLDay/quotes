@@ -24,4 +24,5 @@ class Send:
 
     def _send_to_server(self):
         print("sending")
+        print(self.message)
         self.client_socket.sendall(self.message.SerializeToString())

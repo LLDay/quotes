@@ -1,2 +1,3 @@
 /client/proto/
 server.py
+__pycache__/

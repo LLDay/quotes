@@ -1,5 +1,7 @@
 from socket import *
 import sys
+import time
+import datetime
 import client.proto.quotes_pb2 as quotes_pb2
 from enum import Enum
 from client.controller import Controller
@@ -11,31 +13,33 @@ class Recieve:
         self.client_socket = socket(AF_INET, SOCK_STREAM, 0)
         self.client_socket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
 
-        connected = False
-        while not connected:
-            try:
-                self.client_socket.connect((ip, port))
-                connected = True
-            except Exception as e:
-                pass #Try again
+        while True:
+            connected = False
+            while not connected:
+                try:
+                    self.client_socket.connect((ip, port))
+                    connected = True
+                except Exception as e:
+                    pass #Try again
 
-        self.type_request = quotes_pb2.GET
+            self.type_request = quotes_pb2.GET
 
-        controller = Controller(clientSocket=self.client_socket)
-        is_server_on = True
+            controller = Controller(clientSocket=self.client_socket)
+            is_server_on = True
 
-        while is_server_on:
-            controller.console_enter()
-            print("after")
-            is_server_on = self._recieve_message(controller.data, controller.action_incrimentation)
+            while is_server_on:
+                controller.console_enter()
+                print("after")
+                is_server_on = self._recieve_message(controller.data, controller.action_incrimentation)
 
-    def _recieve_message(self, data={}, actionIncrimentation):
+    def _recieve_message(self, data, actionIncrimentation):
         receive_uncompleted = 0
         full_message = bytearray()
         message = quotes_pb2.Packet()
         while receive_uncompleted == 0:
-            message_recieved = self.client_socket.recv(MESSAGE_LENGTH)
 
+            #try catch
+            message_recieved = self.client_socket.recv(MESSAGE_LENGTH)
             if not len(message_recieved):
                 print('Connection closed by the server')
                 return False
@@ -51,7 +55,7 @@ class Recieve:
         if message.type != quotes_pb2.Type.GET:
             self._recieve_add_delete(data=data, message=message)
         else:
-            self._recieve_get(message=message, actionIncrimentation)
+            self._recieve_get(message, actionIncrimentation)
 
     def _recieve_add_delete(self, data, message):
         data_recieved = {}
@@ -69,6 +73,8 @@ class Recieve:
             else:
                 print("Wrong history")
 
+        print(data_recieved)
+
     def _recieve_get(self, message, actionIncrimentation):
         for asset in message.assets:
             print(asset.name)
@@ -79,4 +85,5 @@ class Recieve:
                 print("absolute: ", points[1]-points[0], " relative: ", (points[1]/points[0]*100)-100)
             else:
                 for history_point in asset.history:
-                    print("time: ", history_point.time, " value: ", history_point.value)
+                    #print(time.strftime('%Y-%m-%d:%H:%M:%S', time.localtime(history_point.time)))
+                    print("time: ", datetime.datetime.fromtimestamp(history_point.time), " value: ", history_point.value)
