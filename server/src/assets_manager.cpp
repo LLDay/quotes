@@ -9,7 +9,7 @@
 
 #include "quotes/asset.h"
 #include "quotes/assets_manager.h"
-#include "quotes/log.h"
+#include "quotes/utils.h"
 
 namespace quotes {
 

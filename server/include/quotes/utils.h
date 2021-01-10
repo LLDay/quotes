@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <mutex>
+#include <string>
 
 namespace quotes {
 
@@ -12,5 +13,7 @@ void log(Args &&... args) noexcept {
     ((std::cout << args << " "), ...);
     std::cout << std::endl;
 }
+
+std::string timeToString(uint64_t microseconds) noexcept;
 
 }  // namespace quotes

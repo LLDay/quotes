@@ -9,9 +9,9 @@
 
 #include "quotes.pb.h"
 #include "quotes/asset.h"
-#include "quotes/log.h"
 #include "quotes/session.h"
 #include "quotes/types.h"
+#include "quotes/utils.h"
 
 namespace quotes {
 
@@ -134,7 +134,11 @@ proto::Packet Server::processGet(const proto::Packet & packet) noexcept {
                 } else if (protoAsset.history_size() == 2) {
                     auto from = protoAsset.history(0).time();
                     auto to = protoAsset.history(1).time();
-                    log("Request", assetName, "by time from", from, "to", to);
+                    if (from > to)
+                        std::swap(from, to);
+
+                    log("Request", assetName, "from", timeToString(from), "to",
+                        timeToString(to));
                     asset.truncate(from, to);
                 } else {
                     asset.truncate(0);

@@ -18,12 +18,13 @@ PROTOBUF_GENERATE_CPP(
 )
 
 add_executable(server
-    ${CMAKE_CURRENT_SOURCE_DIR}/clients_manager.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/asset.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/assets_manager.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/clients_manager.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/server.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/session.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/utils.cpp
     ${PROTO_SRCS} ${PROTO_HDRS}
 )
 

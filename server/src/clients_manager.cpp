@@ -4,7 +4,7 @@
 
 #include <boost/thread/lock_guard.hpp>
 
-#include "quotes/log.h"
+#include "quotes/utils.h"
 #include "quotes/types.h"
 
 namespace quotes {

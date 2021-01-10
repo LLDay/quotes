@@ -15,7 +15,7 @@
 #include <boost/program_options/variables_map.hpp>
 #include <boost/system/detail/error_code.hpp>
 
-#include "quotes/log.h"
+#include "quotes/utils.h"
 #include "quotes/server.h"
 
 quotes::Setup parseArgs(int argc, char * argv[]) {

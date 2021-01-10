@@ -4,17 +4,13 @@
 #include <cmath>
 #include <ctime>
 #include <iomanip>
+#include <ios>
 #include <iterator>
 #include <ostream>
 
-#include <boost/date_time/gregorian/gregorian.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/date_time/posix_time/posix_time_duration.hpp>
-#include <boost/date_time/posix_time/ptime.hpp>
-
 #include "quotes.pb.h"
-#include "quotes/log.h"
 #include "quotes/types.h"
+#include "quotes/utils.h"
 
 namespace quotes {
 
@@ -32,11 +28,7 @@ std::ostream & operator<<(
     static auto precision = 6;
     static auto factor = std::pow(10, precision);
 
-    boost::posix_time::ptime epoch(boost::gregorian::date(1970, 1, 1));
-    auto ptime = epoch + boost::posix_time::microseconds(point.time);
-
-    auto timeString = boost::posix_time::to_simple_string(ptime);
-    ostream << "time " << timeString << " value "
+    ostream << "time " << timeToString(point.time) << " value " << std::fixed
             << std::setprecision(precision) << point.value / factor;
 
     return ostream;
@@ -56,7 +48,7 @@ void Asset::add(proto::HistoryPoint protoPoint) noexcept {
     HistoryPoint point;
     point.time = protoPoint.time();
     point.value = protoPoint.value();
-    log("Add point:", point);
+    log("Add point to", mName, point);
     add(point);
 }
 
