@@ -141,8 +141,7 @@ proto::Packet Server::processGet(const proto::Packet & packet) noexcept {
                         timeToString(to));
                     asset.truncate(from, to);
                 } else {
-                    asset.truncate(0);
-                    log("Request", assetName);
+                    log("Request all history of", assetName);
                 }
 
                 if (requestedBefore)
