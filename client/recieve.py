@@ -51,29 +51,30 @@ class Recieve:
         return True
 
     def checkServerResponse(self, data, message, actionIncrimentation):
-        print("after recieving")
         if message.type != quotes_pb2.Type.GET:
-            self._recieve_add_delete(data=data, message=message)
+            self._recieve_add_delete(data=data, message=message, messageType=message.type)
         else:
             self._recieve_get(message, actionIncrimentation)
 
-    def _recieve_add_delete(self, data, message):
+    def _recieve_add_delete(self, data, message, messageType):
         data_recieved = {}
         for asset in message.assets:
             data_recieved[asset.name] = {}
             for history_point in asset.history:
-                print(history_point)
-                data_recieved[asset.name][history_point.time] = history_point.value
+                data_recieved[asset.name][history_point.time / 10**6] = history_point.value / 10**6
 
-        if data == data_recieved:
+        #add delete ok if 0
+        if messageType == quotes_pb2.Type.DELETE and not data_recieved:
+            print("All assets were deleted")
+        elif data == data_recieved:
             print("All good")
-        else:
-            if data.keys() != data_recieved.keys():
-                print("Wrong asset")
-            else:
-                print("Wrong history")
+        #else:
+        #    if data.keys() != data_recieved.keys():
+        #        print("Wrong asset")
+        #    else:
+        #        print("Wrong history")
 
-        print(data_recieved)
+        #print(data_recieved)
 
     def _recieve_get(self, message, actionIncrimentation):
         for asset in message.assets:
@@ -81,9 +82,11 @@ class Recieve:
             if actionIncrimentation:
                 points = []
                 for history_point in asset.history:
-                    points.append(history_point.value)
-                print("absolute: ", points[1]-points[0], " relative: ", (points[1]/points[0]*100)-100)
+                    points.append(history_point.value / 10**6)
+                if len(points) == 2:
+                    print("absolute: ", points[1]-points[0], " relative: ", (points[1]/points[0]*100)-100)
+                else:
+                    print("not enough points")
             else:
                 for history_point in asset.history:
-                    #print(time.strftime('%Y-%m-%d:%H:%M:%S', time.localtime(history_point.time)))
-                    print("time: ", datetime.datetime.fromtimestamp(history_point.time), " value: ", history_point.value)
+                    print("time: ", datetime.datetime.fromtimestamp(history_point.time / (10**6)), " value: ", history_point.value / 10**6)

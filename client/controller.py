@@ -1,4 +1,5 @@
 import argparse
+import numpy as np
 from datetime import datetime
 from enum import Enum
 import client.proto.quotes_pb2 as quotes_pb2
@@ -16,15 +17,15 @@ class Controller:
 
     def console_enter(self):
         parser = argparse.ArgumentParser(description='Client action')
-        parser.add_argument('action', choices=['add', 'get', 'delete', 'incrimentation'])
+        parser.add_argument('action', choices=['add', 'get', 'delete', 'inc'])
         parser.add_argument('names', metavar='Name', type=str, nargs='*', help='name of the asssets')
         parser.add_argument('-p', '--points', metavar='Int', type=str, nargs='*', help='points for exact asset')
-        parser.add_argument('-tf', '--timefrom', metavar='From', type=str, nargs=1, help='time from')
-        parser.add_argument('-tt', '--timeto', metavar='To', type=str, nargs=1, help='time to')
+        parser.add_argument('-f', '--timefrom', metavar='From', type=str, nargs=1, help='time from')
+        parser.add_argument('-t', '--timeto', metavar='To', type=str, nargs=1, help='time to')
 
         right_form = False
         while not right_form:
-            input_data = input("Enter action: add, get or delete\n")
+            input_data = input("Enter action: add, get, delete or inc\n")
             try:
                 args = parser.parse_args(input_data.split())
                 right_form = True
@@ -39,7 +40,7 @@ class Controller:
             self.type_request = quotes_pb2.DELETE
         elif action == "get":
             self.type_request = quotes_pb2.GET
-        elif action == "incrimentation":
+        elif action == "inc":
             self.type_request = quotes_pb2.GET
             self.action_incrimentation = True
 
@@ -56,7 +57,7 @@ class Controller:
 
         if onlyNames:
             for name in args.names:
-                if (args.action != "incrimentation"):
+                if (args.action != "inc"):
                     data_temp[name] = {}
                 else:
                     data_temp[name] = {}
@@ -74,16 +75,17 @@ class Controller:
                     from_epoch_time = (datetime.strptime(args.timefrom[0], '%Y-%m-%d:%H:%M:%S') - datetime(1970, 1, 1)).total_seconds()
                     data_temp[name[0]][from_epoch_time] = 0 #from
                 else:
-                    data_temp[name[0]]['0'] = 0 #from
+                    min_time = str(float(0))
+                    data_temp[name[0]][min_time] = 0 #from
                 if args.timeto is not None:
                     to_epoch_time = (datetime.strptime(args.timeto[0], '%Y-%m-%d:%H:%M:%S') - datetime(1970, 1, 1)).total_seconds()
                     data_temp[name[0]][to_epoch_time] = 0 #to
                 else:
-                    data_temp[name[0]]['999999999'] = 0 #to
+                    max_time = str(float(2**62-1))
+                    data_temp[name[0]][max_time] = 0 #to
 
         self.data = data_temp
         self._send_model()
 
     def _send_model(self):
-        print("before sending")
         Send(self.client_socket, self.type_request, self.data)

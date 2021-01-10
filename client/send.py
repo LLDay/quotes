@@ -1,4 +1,5 @@
 from socket import *
+import numpy as np
 from enum import Enum
 import client.proto.quotes_pb2 as quotes_pb2
 from datetime import datetime
@@ -18,11 +19,10 @@ class Send:
             asset.name = name
             for time, value in self.data[name].items():
                 history_point = asset.history.add()
-                history_point.time = int(time)
-                history_point.value = int(value)
+                history_point.time = int(float(time)) * 10**6
+                history_point.value = int(float(value)) * 10**6
         self._send_to_server()
 
     def _send_to_server(self):
-        print("sending")
-        print(self.message)
+        #print(self.message)
         self.client_socket.sendall(self.message.SerializeToString())
