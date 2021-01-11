@@ -29,7 +29,6 @@ class Recieve:
 
             while is_server_on:
                 controller.console_enter()
-                print("after")
                 is_server_on = self._recieve_message(controller.data, controller.action_incrimentation)
 
     def _recieve_message(self, data, actionIncrimentation):

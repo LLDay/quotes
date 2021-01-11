@@ -81,7 +81,7 @@ class Controller:
                     to_epoch_time = (datetime.strptime(args.timeto[0], '%Y-%m-%d:%H:%M:%S') - datetime(1970, 1, 1)).total_seconds()
                     data_temp[name[0]][to_epoch_time] = 0 #to
                 else:
-                    max_time = str(float(2**62-1))
+                    max_time = str(float(2**40))
                     data_temp[name[0]][max_time] = 0 #to
 
         self.data = data_temp
