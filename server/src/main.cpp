@@ -15,8 +15,8 @@
 #include <boost/program_options/variables_map.hpp>
 #include <boost/system/detail/error_code.hpp>
 
-#include "quotes/utils.h"
 #include "quotes/server.h"
+#include "quotes/utils.h"
 
 quotes::Setup parseArgs(int argc, char * argv[]) {
     namespace po = boost::program_options;
@@ -29,7 +29,7 @@ quotes::Setup parseArgs(int argc, char * argv[]) {
         ("threads,t", po::value<size_t>(), "number of threads (default 4)")
         ("port,p", po::value<int>(), "specify port number (default 1100)")
         ("data,d", po::value<std::string>(), "path to file with saved data (default \"assets.data\")")
-        ("no-data,n", "supress loading/storing data");
+        ("no-data,n", "suppress loading/storing data");
     // clang-format on
 
     po::variables_map map;
