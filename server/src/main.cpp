@@ -7,7 +7,7 @@
 #include <boost/asio/post.hpp>
 #include <boost/asio/signal_set.hpp>
 #include <boost/asio/thread_pool.hpp>
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #include <boost/cstdlib.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/program_options/options_description.hpp>

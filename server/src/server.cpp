@@ -5,7 +5,7 @@
 #include <random>
 
 #include <boost/asio/placeholders.hpp>
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 
 #include "quotes.pb.h"
 #include "quotes/asset.h"
