@@ -110,3 +110,14 @@ Executable is located in /build/bin/
 ```
 ## Stopping
 To stop the server, send it SIGINT using `^C` or `kill`.
+
+# Client
+
+## Options
+```
+-h [ --help ]         show help message
+-i [ --ip ] str       ip adress for connection (default = 127.0.0.1)
+-p [ --port ] int     port adress for connection (default = 1100)
+```
+## Stopping
+To stop the server, send it SIGINT using `^C`.
