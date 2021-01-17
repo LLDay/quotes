@@ -120,4 +120,4 @@ To stop the server, send it SIGINT using `^C` or `kill`.
 -p [ --port ] int     port adress for connection (default = 1100)
 ```
 ## Stopping
-To stop the server, send it SIGINT using `^C`.
+To stop a client, send it SIGINT using `^C`.
