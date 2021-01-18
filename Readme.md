@@ -33,7 +33,7 @@ The server creates a new asset, if the asset didn't exist, and answer
 ## Delete
 
 All history points are ignored. Clients send a list of assets to delete. The server returns
-a list of assets that wasn't deleted because of error name.
+a list of assets that was deleted.
 
 Query:
 
